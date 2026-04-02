@@ -1,28 +1,36 @@
 # VPS Skills
 
-开源 VPS 安全防护技能集合 🤖
+🤖 开源 Skills 技能集合
 
 ## 关于
 
-本项目收集和整理实用的 VPS 安全防护技能，帮助普通用户快速配置服务器安全。
+本项目收集和整理实用的 Skills 技能，帮助用户快速实现各种自动化功能。
 
 ## 技能列表
 
-### 🔐 vps-security - VPS 基础安全防护
+### 🔐 安全防护类
 
-为 VPS 提供一键安全配置，包括：
-
-- 修改 SSH 默认端口（防扫描）
-- 配置 SSH 公钥认证
+#### vps-security - VPS 基础安全防护
+- SSH 端口修改（防扫描）
+- 公钥认证配置
 - 智能防火墙（UFW/iptables）
 - fail2ban 防暴力破解（7天封禁）
 - 每日安全巡检（自动封禁异常IP）
 
 **适用系统：** Ubuntu 20.04+ / Debian 11+
 
-**使用方法：** 将 `skills/vps-security/SKILL.md` 复制到 OpenClaw 的 `skills/` 目录
+## 目录结构
 
-**详细文档：** [skills/vps-security/SKILL.md](skills/vps-security/SKILL.md)
+```
+skills/
+├── vps-security/          # VPS 安全防护
+│   └── SKILL.md
+└── README.md
+```
+
+## 使用方法
+
+将 `skills/` 目录下的技能复制到 OpenClaw 的 `skills/` 目录即可使用。
 
 ## 贡献
 
