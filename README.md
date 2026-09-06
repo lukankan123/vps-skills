@@ -33,11 +33,11 @@ One-shot security hardening for Ubuntu/Debian VPS:
 
 **Quick start:**
 ```bash
+# Default: random high SSH port (recommended) — recorded to /root/ssh_port.txt
+curl -fsSL https://your-server/vps-secure.sh | sudo bash -s -- --email your@email.com
+
 # Fixed port
 curl -fsSL https://your-server/vps-secure.sh | sudo bash -s -- --port 13521 --email your@email.com
-
-# Random high port (recommended)
-curl -fsSL https://your-server/vps-secure.sh | sudo bash -s -- --random-port --email your@email.com
 ```
 
 **Supported systems:** Ubuntu 20.04+ / Debian 11+

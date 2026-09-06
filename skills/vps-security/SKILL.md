@@ -9,7 +9,7 @@ description: VPS 基础安全防护技能 v2.1。为不懂安全的普通用户�
 
 ## 功能特性
 
-- 🔐 修改 SSH 默认端口（默认 13521，或 `--random-port` 随机生成高位端口）
+- 🔐 修改 SSH 默认端口（默认随机生成高位端口 40000-60000，或 `--port` 手动指定）
 - 🔑 自动配置 SSH 公钥认证（禁用密码登录）
 - 🛡️ SSH 加密算法现代化（Kex/Cipher/MAC 移除老旧弱算法，只保留安全强度）
 - 🔥 智能防火墙（UFW，支持 --strict 出站白名单）
@@ -27,28 +27,29 @@ description: VPS 基础安全防护技能 v2.1。为不懂安全的普通用户�
 
 ```bash
 # 下载并执行（脚本在 scripts/vps-secure.sh）
+# 默认：脚本自动生成随机高位 SSH 端口（推荐），记录到 /root/ssh_port.txt
+curl -fsSL https://your-server/vps-secure.sh | sudo bash -s -- --email your@email.com
+
+# 或指定固定端口
 curl -fsSL https://your-server/vps-secure.sh | sudo bash -s -- --port 13521 --email your@email.com
 
-# 随机高位端口（推荐）—— 生成的端口记录到 /root/ssh_port.txt
-curl -fsSL https://your-server/vps-secure.sh | sudo bash -s -- --random-port --email your@email.com
-
 # 或直接在服务器执行脚本内容
-sudo bash scripts/vps-secure.sh --port 13521 --email your@email.com
+sudo bash scripts/vps-secure.sh --email your@email.com
 ```
 
 ### 参数
 
 | 参数 | 说明 | 默认值 |
 |------|------|--------|
-| `--port` | SSH 端口（手动指定） | 13521 |
-| `--random-port` | 随机生成高位 SSH 端口（40000-60000，带冲突检测，记录到 /root/ssh_port.txt） | 关闭 |
+| `--port` | SSH 端口（手动指定；**不指定时默认生成随机高位端口**） | 随机生成 |
+| `--random-port` | 显式指定随机生成高位 SSH 端口（40000-60000，带冲突检测，记录到 /root/ssh_port.txt） | 停用（默认已随机） |
 | `--email` | 告警邮箱 | root@localhost |
 | `--strict` | UFW 出站白名单模式 | 关闭 |
 | `--skip-nginx` | 跳过 Nginx 加固 | 关闭 |
 | `--skip-kernel` | 跳过内核加固 | 关闭 |
 | `--no-upgrade` | 跳过 apt 升级 | 关闭 |
 
-> 核心步骤细节以 `scripts/vps-secure.sh` v2.0 为准（含 9 个 jail、Nginx 加固、内核加固、升级版巡检）。
+> 核心步骤细节以 `scripts/vps-secure.sh` v2.1 为准（含随机高位端口、现代化 SSH 加密、9 个 jail、Nginx 加固、内核加固、升级版巡检）。
 
 ## 核心步骤
 
@@ -67,7 +68,7 @@ fi
 ### 2. 配置 SSH
 
 ```bash
-# 修改端口
+# 修改端口（脚本默认生成随机高位端口，或用 --port 指定）
 SSH_PORT=13521
 sudo sed -i "s/^Port 22$/Port $SSH_PORT/" /etc/ssh/sshd_config
 

@@ -24,6 +24,7 @@ Versions are tied to the skill, not the repo.
 
 #### Changed
 - Install URL example in the script header now uses the neutral `https://your-server/...` placeholder instead of a hardcoded personal domain.
+- **Random port is now the default** — when `--port` is omitted, the script auto-generates a random high SSH port (40000–60000) instead of the old fixed 13521. `--port` still overrides with a manual value.
 
 ### v2.0 — 2026-08-03
 

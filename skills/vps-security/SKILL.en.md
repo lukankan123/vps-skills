@@ -9,7 +9,7 @@ One-shot security hardening for your VPS. v2.1 adds a random high SSH port optio
 
 ## Features
 
-- 🔐 **SSH Hardening** — custom port (13521) OR `--random-port` (40000-60000, collision-checked, recorded to `/root/ssh_port.txt`), disable password login, force key auth, limit retries
+- 🔐 **SSH Hardening** — custom port OR default random high port (40000-60000, collision-checked, recorded to `/root/ssh_port.txt`), disable password login, force key auth, limit retries
 - 🛡️ **Modern SSH crypto** — X25519 key exchange, Chacha20-Poly1305 / AES-GCM ciphers, modern MACs; keeps session alive (ClientAliveInterval/TCPKeepAlive)
 - 🔥 **UFW Firewall** — deny incoming by default, optional `--strict` egress whitelist mode
 - 🚫 **fail2ban with 9 jails** — SSH brute-force + 6 Nginx scan detectors + bot search + rate-limit cooldown
@@ -21,27 +21,27 @@ One-shot security hardening for your VPS. v2.1 adds a random high SSH port optio
 ## Quick Start
 
 ```bash
-# One-shot install (default SSH port 13521)
-curl -fsSL https://your-server/vps-secure.sh | sudo bash -s -- --port 13521 --email your@email.com
+# Default: the script picks a random high SSH port (recommended)
+curl -fsSL https://your-server/vps-secure.sh | sudo bash -s -- --email your@email.com
 
-# Or let the script pick a random high SSH port (recommended)
-curl -fsSL https://your-server/vps-secure.sh | sudo bash -s -- --random-port --email your@email.com
+# Or specify a fixed port
+curl -fsSL https://your-server/vps-secure.sh | sudo bash -s -- --port 13521 --email your@email.com
 ```
 
 Or download and run:
 
 ```bash
-sudo bash scripts/vps-secure.sh --port 13521 --email your@email.com
+sudo bash scripts/vps-secure.sh --email your@email.com
 ```
 
-Full script: `scripts/vps-secure.sh` (v2.1, 614 lines).
+Full script: `scripts/vps-secure.sh` (v2.1, 615 lines).
 
 ## Options
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `--port` | SSH port (manual) | 13521 |
-| `--random-port` | Generate a random high SSH port (40000-60000, collision-checked, saved to `/root/ssh_port.txt`) | off |
+| `--port` | SSH port (manual; **random high port generated if omitted**) | random |
+| `--random-port` | Explicitly generate a random high SSH port (40000-60000, collision-checked, saved to `/root/ssh_port.txt`) | off (default already random) |
 | `--email` | Alert email (fail2ban / scan report) | root@localhost |
 | `--strict` | UFW egress whitelist (DNS/HTTP/HTTPS/NTP/SMTP only) | off |
 | `--skip-nginx` | Skip Nginx hardening | off |
@@ -51,11 +51,11 @@ Full script: `scripts/vps-secure.sh` (v2.1, 614 lines).
 Examples:
 
 ```bash
+# Default random high port — records the picked port to /root/ssh_port.txt
+sudo bash scripts/vps-secure.sh --email you@email.com
+
 # Strict egress whitelist + custom port
 sudo bash scripts/vps-secure.sh --port 22022 --email you@email.com --strict
-
-# Random high port (recommended) — records the picked port to /root/ssh_port.txt
-sudo bash scripts/vps-secure.sh --random-port
 
 # App-only server (no Nginx)
 sudo bash scripts/vps-secure.sh --skip-nginx
@@ -75,6 +75,7 @@ apt-get install -y ufw fail2ban curl mailutils iptables-persistent
 
 ```bash
 # Change port (works whether or not a Port line already exists)
+# NOTE: the script uses $SSH_PORT — random high port by default, or your --port value
 sed -i "s/^#\?Port .*/Port 13521/" /etc/ssh/sshd_config || echo "Port 13521" >> /etc/ssh/sshd_config
 
 # Security directives: key auth, no passwords, limited retries

@@ -7,8 +7,8 @@
 #   curl -fsSL https://your-server/skills/vps-security.sh | sudo bash -s -- --random-port --email you@example.com
 #
 # 可选参数：
-#   --port <端口>          SSH 端口（默认 13521）
-#   --random-port          随机生成高位 SSH 端口（40000-60000，带冲突检测，记录到 /root/ssh_port.txt）
+#   --port <端口>          SSH 端口（不指定时默认生成随机高位端口 40000-60000）
+#   --random-port          显式指定随机生成高位 SSH 端口（40000-60000，带冲突检测，记录到 /root/ssh_port.txt）
 #   --email <邮箱>         fail2ban/巡检告警邮箱（可选但推荐）
 #   --strict               启用 UFW 出站白名单（仅允许 DNS/HTTP/HTTPS/NTP/SMTP）
 #   --skip-nginx           跳过 Nginx 加固（服务器上没装 Nginx 时自动跳过）
@@ -32,8 +32,9 @@
 set -e
 
 # 默认参数
-SSH_PORT="${SSH_PORT:-13521}"
-RANDOM_PORT=0
+# 不指定 --port 时默认生成随机高位端口（RANDOM_PORT=1）
+SSH_PORT=""
+RANDOM_PORT=1
 EMAIL="${EMAIL:-}"
 STRICT_MODE=0
 SKIP_NGINX=0
@@ -50,7 +51,7 @@ error(){ echo -e "${RED}[ERROR]${NC} $1"; exit 1; }
 # 解析参数
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --port) SSH_PORT="$2"; shift 2 ;;
+        --port) SSH_PORT="$2"; RANDOM_PORT=0; shift 2 ;;
         --random-port) RANDOM_PORT=1; shift ;;
         --email) EMAIL="$2"; shift 2 ;;
         --strict) STRICT_MODE=1; shift ;;
@@ -111,10 +112,10 @@ check_ssh_session() {
 }
 
 # ============================================================
-log "开始 VPS 安全加固 v2.0 ..."
+log "开始 VPS 安全加固 v2.1 ..."
 detect_os
-# 如果指定了 --random-port，生成随机高位端口（带冲突探测）
-if [[ $RANDOM_PORT -eq 1 ]]; then
+# 未指定 --port 时（默认），生成随机高位端口（带冲突探测）
+if [[ -z "$SSH_PORT" ]]; then
     SSH_PORT=$(random_free_port)
     # 写入端口记录文件，防止日后忘记选中的端口
     echo "SSH_PORT=$SSH_PORT" > /root/ssh_port.txt
