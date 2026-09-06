@@ -23,6 +23,9 @@ One-shot security hardening for your VPS. v2.1 adds a random high SSH port optio
 ```bash
 # One-shot install (default SSH port 13521)
 curl -fsSL https://your-server/vps-secure.sh | sudo bash -s -- --port 13521 --email your@email.com
+
+# Or let the script pick a random high SSH port (recommended)
+curl -fsSL https://your-server/vps-secure.sh | sudo bash -s -- --random-port --email your@email.com
 ```
 
 Or download and run:
@@ -31,13 +34,14 @@ Or download and run:
 sudo bash scripts/vps-secure.sh --port 13521 --email your@email.com
 ```
 
-Full script: `scripts/vps-secure.sh` (v2.0, 561 lines).
+Full script: `scripts/vps-secure.sh` (v2.1, 614 lines).
 
 ## Options
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `--port` | SSH port | 13521 |
+| `--port` | SSH port (manual) | 13521 |
+| `--random-port` | Generate a random high SSH port (40000-60000, collision-checked, saved to `/root/ssh_port.txt`) | off |
 | `--email` | Alert email (fail2ban / scan report) | root@localhost |
 | `--strict` | UFW egress whitelist (DNS/HTTP/HTTPS/NTP/SMTP only) | off |
 | `--skip-nginx` | Skip Nginx hardening | off |
@@ -49,6 +53,9 @@ Examples:
 ```bash
 # Strict egress whitelist + custom port
 sudo bash scripts/vps-secure.sh --port 22022 --email you@email.com --strict
+
+# Random high port (recommended) — records the picked port to /root/ssh_port.txt
+sudo bash scripts/vps-secure.sh --random-port
 
 # App-only server (no Nginx)
 sudo bash scripts/vps-secure.sh --skip-nginx
@@ -74,6 +81,16 @@ sed -i "s/^#\?Port .*/Port 13521/" /etc/ssh/sshd_config || echo "Port 13521" >> 
 for opt in "PermitRootLogin prohibit-password" "PasswordAuthentication no" \
            "PermitEmptyPasswords no" "PubkeyAuthentication yes" \
            "MaxAuthTries 4" "LoginGraceTime 30" "X11Forwarding no"; do
+    key="${opt%% *}"; val="${opt#* }"
+    sed -i "s|^#\?$key .*|$key $val|" /etc/ssh/sshd_config || echo "$key $val" >> /etc/ssh/sshd_config
+done
+
+# Modern SSH crypto (v2.1): strip legacy/weak algorithms, keep only strong ones
+for opt in \
+    "KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256" \
+    "Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes128-ctr" \
+    "MACs hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha2-256,hmac-sha2-512" \
+    "ClientAliveInterval 300" "ClientAliveCountMax 3" "TCPKeepAlive yes"; do
     key="${opt%% *}"; val="${opt#* }"
     sed -i "s|^#\?$key .*|$key $val|" /etc/ssh/sshd_config || echo "$key $val" >> /etc/ssh/sshd_config
 done

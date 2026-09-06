@@ -29,6 +29,9 @@ description: VPS 基础安全防护技能。为不懂安全的普通用户自动
 # 下载并执行（脚本在 scripts/vps-secure.sh）
 curl -fsSL https://your-server/vps-secure.sh | sudo bash -s -- --port 13521 --email your@email.com
 
+# 随机高位端口（推荐）—— 生成的端口记录到 /root/ssh_port.txt
+curl -fsSL https://your-server/vps-secure.sh | sudo bash -s -- --random-port --email your@email.com
+
 # 或直接在服务器执行脚本内容
 sudo bash scripts/vps-secure.sh --port 13521 --email your@email.com
 ```
