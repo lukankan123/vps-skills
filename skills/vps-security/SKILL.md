@@ -1,11 +1,11 @@
 ---
 name: vps-security
-description: VPS 基础安全防护技能。为不懂安全的普通用户自动配置 SSH 端口修改、密钥登录、防火墙（UFW 或 iptables）、fail2ban 防暴力破解，以及 Nginx 恶意扫描检测与拦截。适用于 Ubuntu/Debian 系统。当用户需要：保护 VPS 安全、配置 SSH 防护、安装防火墙、防暴力破解、Nginx Web 扫描拦截时使用。
+description: VPS 基础安全防护技能 v2.1。为不懂安全的普通用户自动配置 SSH 端口修改（含随机高位端口）、现代化 SSH 加密算法、密钥登录、防火墙（UFW 或 iptables）、fail2ban 防暴力破解，以及 Nginx 恶意扫描检测与拦截。适用于 Ubuntu/Debian 系统。当用户需要：保护 VPS 安全、配置 SSH 防护、安装防火墙、防暴力破解、Nginx Web 扫描拦截时使用。
 ---
 
-# VPS 基础安全防护（v2.0）
+# VPS 基础安全防护（v2.1）
 
-本技能为 VPS 提供基础安全防护，适用于 Ubuntu/Debian 系统。v2.0 已同步生产环境实战策略。
+本技能为 VPS 提供基础安全防护，适用于 Ubuntu/Debian 系统。v2.1 新增随机高位 SSH 端口与现代化 SSH 加密算法；v2.0 已同步生产环境实战策略。
 
 ## 功能特性
 
