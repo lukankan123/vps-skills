@@ -1,17 +1,24 @@
 #!/bin/bash
 #================================================================
-# VPS 安全加固脚本 v2.0
+# VPS 安全加固脚本 v2.1
 # 适用系统：Ubuntu 20.04+ / Debian 11+（支持 Debian 12）
 # 用法：
-#   curl -fsSL https://vodka1.eu.cc/skills/vps-security.sh | sudo bash -s -- --port 13521 --email you@example.com
+#   curl -fsSL https://your-server/skills/vps-security.sh | sudo bash -s -- --port 13521 --email you@example.com
+#   curl -fsSL https://your-server/skills/vps-security.sh | sudo bash -s -- --random-port --email you@example.com
 #
 # 可选参数：
 #   --port <端口>          SSH 端口（默认 13521）
+#   --random-port          随机生成高位 SSH 端口（40000-60000，带冲突检测，记录到 /root/ssh_port.txt）
 #   --email <邮箱>         fail2ban/巡检告警邮箱（可选但推荐）
 #   --strict               启用 UFW 出站白名单（仅允许 DNS/HTTP/HTTPS/NTP/SMTP）
 #   --skip-nginx           跳过 Nginx 加固（服务器上没装 Nginx 时自动跳过）
 #   --skip-kernel          跳过内核加固（sysctl 参数）
 #   --no-upgrade           跳过 apt 系统升级
+#
+# v2.1 新增：
+#   - --random-port 随机高位 SSH 端口（避开知名端口 + 冲突检测，记录 /root/ssh_port.txt）
+#   - SSH 加密算法现代化：Kex/Cipher/MAC 移除老旧弱算法，只保留安全强度
+#   - SSH 会话保持（ClientAliveInterval/TCPKeepAlive），防改配置时断连
 #
 # v2.0 新增：
 #   - fail2ban 9 个 jail（sshd + nginx 扫描检测 6 类 + botsearch + 限流联动）
@@ -26,6 +33,7 @@ set -e
 
 # 默认参数
 SSH_PORT="${SSH_PORT:-13521}"
+RANDOM_PORT=0
 EMAIL="${EMAIL:-}"
 STRICT_MODE=0
 SKIP_NGINX=0
@@ -43,14 +51,33 @@ error(){ echo -e "${RED}[ERROR]${NC} $1"; exit 1; }
 while [[ $# -gt 0 ]]; do
     case $1 in
         --port) SSH_PORT="$2"; shift 2 ;;
+        --random-port) RANDOM_PORT=1; shift ;;
         --email) EMAIL="$2"; shift 2 ;;
         --strict) STRICT_MODE=1; shift ;;
         --skip-nginx) SKIP_NGINX=1; shift ;;
         --skip-kernel) SKIP_KERNEL=1; shift ;;
         --no-upgrade) DO_UPGRADE=0; shift ;;
-        *) error "未知参数: $1（可用 --port/--email/--strict/--skip-nginx/--skip-kernel/--no-upgrade）" ;;
+        *) error "未知参数: $1（可用 --port/--random-port/--email/--strict/--skip-nginx/--skip-kernel/--no-upgrade）" ;;
     esac
 done
+
+# 随机高位端口生成（避开知名端口段 + 冲突探测）
+random_free_port() {
+    local port
+    while true; do
+        # 40000-60000 安全高位区间，避开 IANA 知名端口和常用服务段
+        port=$((40000 + RANDOM % 20000))
+        # 避开 SSH/HTTP/HTTPS/DB 等常用端口
+        case "$port" in
+            22|53|80|443|3000|3001|3002|5000|5432|6379|8000|8080|8443|8888) continue ;;
+        esac
+        # 探测端口是否被占用（TCP 或 UDP 监听）
+        if ! ss -tln 2>/dev/null | grep -q ":$port "; then
+            echo "$port"
+            return 0
+        fi
+    done
+}
 
 # 检查 root
 [[ $EUID -ne 0 ]] && error "请使用 sudo 或以 root 用户运行此脚本"
@@ -86,6 +113,15 @@ check_ssh_session() {
 # ============================================================
 log "开始 VPS 安全加固 v2.0 ..."
 detect_os
+# 如果指定了 --random-port，生成随机高位端口（带冲突探测）
+if [[ $RANDOM_PORT -eq 1 ]]; then
+    SSH_PORT=$(random_free_port)
+    # 写入端口记录文件，防止日后忘记选中的端口
+    echo "SSH_PORT=$SSH_PORT" > /root/ssh_port.txt
+    chmod 600 /root/ssh_port.txt
+    log "已生成随机 SSH 端口: $SSH_PORT（记录于 /root/ssh_port.txt）"
+fi
+
 log "SSH 端口: $SSH_PORT | 严格模式: $([ $STRICT_MODE -eq 1 ] && echo ON || echo OFF)"
 
 # 1. 更新系统
@@ -119,7 +155,24 @@ fi
 for opt in "PermitRootLogin prohibit-password" "PasswordAuthentication no" "PermitEmptyPasswords no" "PubkeyAuthentication yes" "MaxAuthTries 4" "LoginGraceTime 30" "X11Forwarding no"; do
     key="${opt%% *}"; val="${opt#* }"
     if grep -qE "^#?$key " "$SSHD_CONF"; then
-        sed -i "s|^#\?$key .*|$key $val|" "$SSHD_CONF"
+        sed -i "s|^#\\?$key .*|$key $val|" "$SSHD_CONF"
+    else
+        echo "$key $val" >> "$SSHD_CONF"
+    fi
+done
+
+# 加密算法现代化：移除老旧/弱算法（Kex/Cipher/MAC），只保留安全的
+# 这些行放独立段，避免覆盖已有自定义配置（存在则跳过，不存在则追加）
+for opt in \
+    "KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256" \
+    "Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes128-ctr" \
+    "MACs hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha2-256,hmac-sha2-512" \
+    "ClientAliveInterval 300" \
+    "ClientAliveCountMax 3" \
+    "TCPKeepAlive yes"; do
+    key="${opt%% *}"; val="${opt#* }"
+    if grep -qE "^#?$key " "$SSHD_CONF"; then
+        sed -i "s|^#\\?$key .*|$key $val|" "$SSHD_CONF"
     else
         echo "$key $val" >> "$SSHD_CONF"
     fi

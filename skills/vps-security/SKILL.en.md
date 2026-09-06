@@ -1,15 +1,16 @@
 ---
 name: vps-security
-description: VPS security hardening skill v2.0. One-click SSH hardening, UFW firewall, fail2ban with 9 jails (incl. Nginx scan detection), Nginx hardening, kernel hardening and daily security scans for Ubuntu/Debian. Use when the user needs to secure a VPS, configure SSH protection, install a firewall, block brute-force attacks, or stop Nginx web scanners.
+description: VPS security hardening skill v2.1. One-click SSH hardening (custom or random high port), modern X25519/GCM cipher suites, UFW firewall, fail2ban with 9 jails (incl. Nginx scan detection), Nginx hardening, kernel hardening and daily security scans for Ubuntu/Debian. Use when the user needs to secure a VPS, configure SSH protection, install a firewall, block brute-force attacks, or stop Nginx web scanners.
 ---
 
-# VPS Security Hardening (v2.0)
+# VPS Security Hardening (v2.1)
 
-One-shot security hardening for your VPS. v2.0 packages battle-tested strategies from production into a generic script with automatic backups and syntax checks — you won't lock yourself out.
+One-shot security hardening for your VPS. v2.1 adds a random high SSH port option and modern SSH cipher hardening. v2.0 packaged battle-tested strategies from production into a generic script with automatic backups and syntax checks — you won't lock yourself out.
 
 ## Features
 
-- 🔐 **SSH Hardening** — custom port (13521), disable password login, force key auth, limit retries
+- 🔐 **SSH Hardening** — custom port (13521) OR `--random-port` (40000-60000, collision-checked, recorded to `/root/ssh_port.txt`), disable password login, force key auth, limit retries
+- 🛡️ **Modern SSH crypto** — X25519 key exchange, Chacha20-Poly1305 / AES-GCM ciphers, modern MACs; keeps session alive (ClientAliveInterval/TCPKeepAlive)
 - 🔥 **UFW Firewall** — deny incoming by default, optional `--strict` egress whitelist mode
 - 🚫 **fail2ban with 9 jails** — SSH brute-force + 6 Nginx scan detectors + bot search + rate-limit cooldown
 - 🌐 **Nginx Hardening** — hide version, block 19 malicious UAs, deny sensitive paths, rate limiting, ghost-domain 444
