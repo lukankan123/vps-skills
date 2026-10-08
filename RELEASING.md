@@ -46,7 +46,9 @@ git tag -f vps-security-vX.Y && git push -f origin vps-security-vX.Y
 
 ## 密钥
 
-- 私钥：`/root/.hermes/secrets/vps-skills-signing/minisign.key`（`600`，**只留在发布机，绝不入库、绝不外发**）
+- 私钥：`/root/.hermes/secrets/vps-skills-signing/minisign.key`（`600`，所在目录 `700`，**只留在发布机，绝不入库、绝不外发**）
+- ⚠️ **请离线另存一份私钥**（自己 `scp` 到本地/离线介质）：私钥丢了，就用同一把密钥给不了后续版本签名，换新密钥又得重新走一次「独立渠道公布 Key ID」的流程
+- 该密钥**无口令**（否则每次自动发布都要人工输密码）；它的保护来自文件权限 + 主机加固。若你更看重口令保护，可以重新生成带口令的密钥，代价是每次发布要手动输一次
 - 公钥：随仓库发布（`minisign.pub`），Key ID `5AB319E92F6F292`
 - 如需更换密钥：**先**把新公钥与 Key ID 用独立渠道公布（站点公告/README 同时更新），再签新版本；
   历史版本签名用旧公钥验，两把公钥都要保留说明
