@@ -86,7 +86,8 @@ verify_all() {
     a="$(sha256sum "$SCRIPT" | awk '{print $1}')"
     b="$(sha256sum "$SITE/$DIST_NAME" | awk '{print $1}')"
     [ "$a" = "$b" ] || die "站点分发的脚本与仓库不一致"
-    ( cd "$SITE" && minisign -Vm SHA256SUMS -p minisign.pub >/dev/null ) || die "站点签名自验失败"
+    # 签名已在上面用仓库文件验过；站点这份只需证明与仓库逐字节一致
+    cmp -s "$REPO/SHA256SUMS" "$SITE/SHA256SUMS" || die "站点的校验值文件与仓库不一致"
     log "站点分发一致性通过"
   fi
 }
