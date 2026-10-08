@@ -46,9 +46,15 @@ git tag -f vps-security-vX.Y && git push -f origin vps-security-vX.Y
 
 ## 密钥
 
-- 私钥：`/root/.hermes/secrets/vps-skills-signing/minisign.key`（`600`，所在目录 `700`，**只留在发布机，绝不入库、绝不外发**）
-- ⚠️ **请离线另存一份私钥**（自己 `scp` 到本地/离线介质）：私钥丢了，就用同一把密钥给不了后续版本签名，换新密钥又得重新走一次「独立渠道公布 Key ID」的流程
-- 该密钥**无口令**（否则每次自动发布都要人工输密码）；它的保护来自文件权限 + 主机加固。若你更看重口令保护，可以重新生成带口令的密钥，代价是每次发布要手动输一次
+- 私钥：**由项目所有者离线保管，服务器上不保留**（本仓库曾于 2026-10-08 生成并随后从服务器擦除，
+  删除前记录的私钥 SHA256 为 `30d639688b9b1993468afe15c57e49ba9415755b04da359a218f8348ae3fcd8d`，大小 262 字节；所有者本地副本已逐字节核对一致）
+- 公钥：随仓库发布（`minisign.pub`），Key ID `5AB319E92F6F292`；服务器保留一份仅用于**核对**（`--check`）
+- 发布签名版时需要临时提供私钥，二选一：
+  1. 把私钥放回 `/root/.hermes/secrets/vps-skills-signing/minisign.key`，发布后**立即取走并删除**
+  2. 指向临时位置：`MINISIGN_KEYDIR=/path/to/keydir bash scripts/sign-release.sh`
+- 只想核对已发布产物（不需要私钥）：`bash scripts/sign-release.sh --check`
+- ⚠️ 如私钥丢失：用同一把密钥无法再签新版本，须生成新密钥并重新走「独立渠道公布 Key ID」流程，
+  历史版本仍可用旧公钥验证（旧公钥与说明要保留）
 - 公钥：随仓库发布（`minisign.pub`），Key ID `5AB319E92F6F292`
 - 如需更换密钥：**先**把新公钥与 Key ID 用独立渠道公布（站点公告/README 同时更新），再签新版本；
   历史版本签名用旧公钥验，两把公钥都要保留说明
