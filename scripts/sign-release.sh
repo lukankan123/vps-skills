@@ -61,13 +61,17 @@ sign_sums() {
 # ---------- 3. 同步站点 ----------
 sync_site() {
   [ -d "$SITE" ] || { warn "站点目录不存在，跳过同步：$SITE"; return 0; }
-  install -m 0644 "$SCRIPT"                    "$SITE/$DIST_NAME"
-  install -m 0644 "$REPO/SHA256SUMS"           "$SITE/SHA256SUMS"
-  install -m 0644 "$REPO/SHA256SUMS.minisig"   "$SITE/SHA256SUMS.minisig"
-  install -m 0644 "$REPO/minisign.pub"         "$SITE/minisign.pub"
-  install -m 0644 "$REPO/README_cn.md"         "$SITE/README.md"
-  install -m 0644 "$REPO/CHANGELOG.md"         "$SITE/CHANGELOG.md"
-  ( cd "$SITE" && rm -f vps-security.zip && zip -q vps-security.zip README.md "$DIST_NAME" CHANGELOG.md SHA256SUMS SHA256SUMS.minisig minisign.pub )
+  # 站点只放「HTTP 真能取到」的文件：脚本 + 校验值 + zip
+  # （.md / .minisig / .pub 会被 Next 应用判 404，故只随 zip 分发；签名/公钥/文档以 GitHub 为准）
+  rm -f "$SITE"/*.bak_* 2>/dev/null || true
+  install -m 0644 "$SCRIPT"          "$SITE/$DIST_NAME"
+  install -m 0644 "$REPO/SHA256SUMS" "$SITE/SHA256SUMS"
+  rm -f "$SITE/README.md" "$SITE/CHANGELOG.md" "$SITE/SHA256SUMS.minisig" "$SITE/minisign.pub" 2>/dev/null || true
+  ( cd "$SITE" && rm -f vps-security.zip && \
+    cp "$REPO/README_cn.md" README.md && cp "$REPO/CHANGELOG.md" CHANGELOG.md && \
+    cp "$REPO/SHA256SUMS.minisig" SHA256SUMS.minisig && cp "$REPO/minisign.pub" minisign.pub && \
+    zip -q vps-security.zip README.md "$DIST_NAME" CHANGELOG.md SHA256SUMS SHA256SUMS.minisig minisign.pub && \
+    rm -f README.md CHANGELOG.md SHA256SUMS.minisig minisign.pub )
   log "站点已同步（含 zip）"
 }
 

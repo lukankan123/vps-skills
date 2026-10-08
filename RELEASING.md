@@ -40,7 +40,8 @@ git tag -f vps-security-vX.Y && git push -f origin vps-security-vX.Y
 
 1. 依据实际脚本重新生成 `SHA256SUMS`（**不要手改这个文件**，手改必漏）
 2. 用 minisign 私钥签名 → `SHA256SUMS.minisig`
-3. 同步站点分发目录（脚本 / 校验值 / 签名 / 公钥 / 文档）+ 重建 zip
+3. 同步站点分发目录：只放** HTTP 真能取到**的文件（脚本 + 校验值），签名/公钥/文档随 zip 分发
+   —— 站点是 Next.js 应用，`.md` / `.minisig` / `.pub` 会被判 404，所以校验值/签名/公钥的权威来源是 GitHub（raw 或 API），与下载源相互独立
 4. 闭环自验：验签名、验校验值、验站点与仓库一致
 
 ## 密钥
