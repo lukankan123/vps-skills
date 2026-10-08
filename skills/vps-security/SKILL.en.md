@@ -3,7 +3,7 @@ name: vps-security
 description: VPS security hardening skill v2.1. One-click SSH hardening (custom or random high port), modern X25519/GCM cipher suites, UFW firewall, fail2ban with 9 jails (incl. Nginx scan detection), Nginx hardening, kernel hardening and daily security scans for Ubuntu/Debian. Use when the user needs to secure a VPS, configure SSH protection, install a firewall, block brute-force attacks, or stop Nginx web scanners.
 ---
 
-# VPS Security Hardening (v2.1)
+# VPS Security Hardening (v2.2)
 
 One-shot security hardening for your VPS. v2.1 adds a random high SSH port option and modern SSH cipher hardening. v2.0 packaged battle-tested strategies from production into a generic script with automatic backups and syntax checks — you won't lock yourself out.
 
@@ -21,11 +21,20 @@ One-shot security hardening for your VPS. v2.1 adds a random high SSH port optio
 ## Quick Start
 
 ```bash
-# Default: the script picks a random high SSH port (recommended)
-curl -fsSL https://your-server/vps-secure.sh | sudo bash -s -- --email your@email.com
+# 1) Download (do NOT pipe straight into a shell -- save it to a file first)
+curl -fsSLO https://vodka1.eu.cc/skills/vps-security.sh
 
-# Or specify a fixed port
-curl -fsSL https://your-server/vps-secure.sh | sudo bash -s -- --port 13521 --email your@email.com
+# 2) Verify integrity: the checksum comes from the GitHub repo
+#    (independent of the download host -- a checksum served next to the script proves nothing)
+curl -fsSL https://raw.githubusercontent.com/lukankan123/vps-skills/main/SHA256SUMS -o SHA256SUMS
+sha256sum -c SHA256SUMS --ignore-missing
+
+# 3) Read what it is going to change (strongly recommended before touching SSH)
+less vps-security.sh
+
+# 4) Run it once you are satisfied
+sudo bash vps-security.sh --email you@example.com        # default: random high SSH port
+# sudo bash vps-security.sh --port 13521 --email you@example.com   # fixed port
 ```
 
 Or download and run:
@@ -86,7 +95,7 @@ for opt in "PermitRootLogin prohibit-password" "PasswordAuthentication no" \
     sed -i "s|^#\?$key .*|$key $val|" /etc/ssh/sshd_config || echo "$key $val" >> /etc/ssh/sshd_config
 done
 
-# Modern SSH crypto (v2.1): strip legacy/weak algorithms, keep only strong ones
+# Modern SSH crypto (v2.2): strip legacy/weak algorithms, keep only strong ones
 for opt in \
     "KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256" \
     "Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes128-ctr" \

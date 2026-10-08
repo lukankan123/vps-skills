@@ -17,7 +17,7 @@ An open-source Skills library co-developed by **Robot** 🤖 and **lukankan123**
 
 ### 🔐 Security
 
-#### vps-security — VPS Security Hardening (v2.1)
+#### vps-security — VPS Security Hardening (v2.2)
 
 One-shot security hardening for Ubuntu/Debian VPS:
 
@@ -33,11 +33,20 @@ One-shot security hardening for Ubuntu/Debian VPS:
 
 **Quick start:**
 ```bash
-# Default: random high SSH port (recommended) — recorded to /root/ssh_port.txt
-curl -fsSL https://your-server/vps-secure.sh | sudo bash -s -- --email your@email.com
+# 1) Download (do NOT pipe straight into a shell -- save it to a file first)
+curl -fsSLO https://vodka1.eu.cc/skills/vps-security.sh
 
-# Fixed port
-curl -fsSL https://your-server/vps-secure.sh | sudo bash -s -- --port 13521 --email your@email.com
+# 2) Verify integrity: the checksum comes from the GitHub repo
+#    (independent of the download host -- a checksum served next to the script proves nothing)
+curl -fsSL https://raw.githubusercontent.com/lukankan123/vps-skills/main/SHA256SUMS -o SHA256SUMS
+sha256sum -c SHA256SUMS --ignore-missing
+
+# 3) Read what it is going to change (strongly recommended before touching SSH)
+less vps-security.sh
+
+# 4) Run it once you are satisfied
+sudo bash vps-security.sh --email you@example.com        # default: random high SSH port
+# sudo bash vps-security.sh --port 13521 --email you@example.com   # fixed port
 ```
 
 **Supported systems:** Ubuntu 20.04+ / Debian 11+
@@ -50,7 +59,7 @@ skills/
 │   ├── SKILL.md                  # 中文文档
 │   ├── SKILL.en.md               # English docs
 │   └── scripts/
-│       └── vps-secure.sh         # v2.0 hardening script (561 lines)
+│       └── vps-secure.sh         # v2.2 hardening script (624 lines)
 └── README.md
 ```
 

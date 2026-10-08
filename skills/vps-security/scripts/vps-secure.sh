@@ -1,10 +1,15 @@
 #!/bin/bash
 #================================================================
-# VPS 安全加固脚本 v2.1
+# VPS 安全加固脚本 v2.2
 # 适用系统：Ubuntu 20.04+ / Debian 11+（支持 Debian 12）
-# 用法：
-#   curl -fsSL https://your-server/skills/vps-security.sh | sudo bash -s -- --port 13521 --email you@example.com
-#   curl -fsSL https://your-server/skills/vps-security.sh | sudo bash -s -- --random-port --email you@example.com
+# 用法（推荐先下载、校验、阅读，再执行）：
+#   curl -fsSLO https://vodka1.eu.cc/skills/vps-security.sh
+#   curl -fsSL https://raw.githubusercontent.com/lukankan123/vps-skills/main/SHA256SUMS -o SHA256SUMS && sha256sum -c SHA256SUMS --ignore-missing
+#   less vps-security.sh
+#   sudo bash vps-security.sh --email you@example.com
+#
+# 不推荐 curl ... | bash：下载即执行，你没有任何机会事先审查；
+# 且校验值若与脚本同源，等于没校验 —— 校验值请从本仓库取。
 #
 # 可选参数：
 #   --port <端口>          SSH 端口（不指定时默认生成随机高位端口 40000-60000）
@@ -14,6 +19,10 @@
 #   --skip-nginx           跳过 Nginx 加固（服务器上没装 Nginx 时自动跳过）
 #   --skip-kernel          跳过内核加固（sysctl 参数）
 #   --no-upgrade           跳过 apt 系统升级
+#
+# v2.2 新增：
+#   - 安装方式改为「下载 → 校验 → 先读 → 再执行」，不再推荐 curl | bash
+#   - 发布 SHA256SUMS 校验值（仓库根目录），文档说明为何校验值必须与下载源分离
 #
 # v2.1 新增：
 #   - --random-port 随机高位 SSH 端口（避开知名端口 + 冲突检测，记录 /root/ssh_port.txt）

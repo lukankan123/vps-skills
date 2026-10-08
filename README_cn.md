@@ -17,7 +17,7 @@
 
 ### 🔐 安全防护
 
-#### vps-security — VPS 基础安全防护（v2.0）
+#### vps-security — VPS 基础安全防护（v2.2）
 
 为 Ubuntu/Debian VPS 提供一键式安全加固：
 
@@ -32,7 +32,19 @@
 
 **快速开始：**
 ```bash
-curl -fsSL https://your-server/vps-secure.sh | sudo bash -s -- --port 13521 --email your@email.com
+# 1) 下载脚本（不要直接管道给 shell —— 先落到文件里）
+curl -fsSLO https://vodka1.eu.cc/skills/vps-security.sh
+
+# 2) 校验完整性：校验值从 GitHub 仓库取（与下载源相互独立，这才有意义）
+curl -fsSL https://raw.githubusercontent.com/lukankan123/vps-skills/main/SHA256SUMS -o SHA256SUMS
+sha256sum -c SHA256SUMS --ignore-missing
+
+# 3) 花两分钟读一遍它要动什么（改 SSH 端口前强烈建议）
+less vps-security.sh
+
+# 4) 确认无误再执行
+sudo bash vps-security.sh --email you@example.com        # 默认随机高位 SSH 端口
+# sudo bash vps-security.sh --port 13521 --email you@example.com   # 指定固定端口
 ```
 
 **适用系统：** Ubuntu 20.04+ / Debian 11+
@@ -45,7 +57,7 @@ skills/
 │   ├── SKILL.md                  # 中文文档
 │   ├── SKILL.en.md               # 英文文档
 │   └── scripts/
-│       └── vps-secure.sh         # v2.0 加固脚本（561 行）
+│       └── vps-secure.sh         # v2.2 加固脚本（624 行）
 └── README.md
 ```
 

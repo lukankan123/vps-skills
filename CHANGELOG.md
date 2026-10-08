@@ -9,6 +9,13 @@ Versions are tied to the skill, not the repo.
 
 ## vps-security
 
+### v2.2 — 2026-10-08
+
+- **安装方式改变**：不再推荐 `curl ... | bash`（下载即执行，无审查机会，且校验值若与脚本同源等于没校验）
+  改为四步：下载 → 校验 → 先读一遍 → 再执行
+- **新增 `SHA256SUMS`**：脚本的 SHA256 校验值发布在仓库根目录，文档明确说明「校验值必须与下载源分离」
+- 文档同步：README.md / README_cn.md / SKILL.md / SKILL.en.md 的示例全部改为四步法
+- 修正文档里过期的版本号与行数（v2.0 / 561 行 → v2.2 / 当前行数）
 ### v2.1 — 2026-09-06
 
 #### Added

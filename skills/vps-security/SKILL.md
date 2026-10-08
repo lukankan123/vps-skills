@@ -21,20 +21,24 @@ description: VPS 基础安全防护技能 v2.1。为不懂安全的普通用户�
 
 ## 执行脚本
 
-完整脚本见：`scripts/vps-secure.sh`（v2.0，561 行）
+完整脚本见：`scripts/vps-secure.sh`（v2.2，624 行）
 
 ### 使用方法
 
 ```bash
-# 下载并执行（脚本在 scripts/vps-secure.sh）
-# 默认：脚本自动生成随机高位 SSH 端口（推荐），记录到 /root/ssh_port.txt
-curl -fsSL https://your-server/vps-secure.sh | sudo bash -s -- --email your@email.com
+# 1) 下载脚本（不要直接管道给 shell —— 先落到文件里）
+curl -fsSLO https://vodka1.eu.cc/skills/vps-security.sh
 
-# 或指定固定端口
-curl -fsSL https://your-server/vps-secure.sh | sudo bash -s -- --port 13521 --email your@email.com
+# 2) 校验完整性：校验值从 GitHub 仓库取（与下载源相互独立，这才有意义）
+curl -fsSL https://raw.githubusercontent.com/lukankan123/vps-skills/main/SHA256SUMS -o SHA256SUMS
+sha256sum -c SHA256SUMS --ignore-missing
 
-# 或直接在服务器执行脚本内容
-sudo bash scripts/vps-secure.sh --email your@email.com
+# 3) 花两分钟读一遍它要动什么（改 SSH 端口前强烈建议）
+less vps-security.sh
+
+# 4) 确认无误再执行
+sudo bash vps-security.sh --email you@example.com        # 默认随机高位 SSH 端口
+# sudo bash vps-security.sh --port 13521 --email you@example.com   # 指定固定端口
 ```
 
 ### 参数
