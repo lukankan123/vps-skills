@@ -48,6 +48,8 @@ sudo bash vps-security.sh --email you@example.com        # 默认随机高位 SS
 
 > 若校验刚好失败、而这又是刚发布的版本：多半是 GitHub raw 的 CDN 还在缓存旧文件，等几分钟重试即可（校验值也可用 GitHub API 取，API 不带该缓存）。
 
+> 📦 维护与发布（改文档、签名、同步站点）：见仓库根目录 [RELEASING.md](../../RELEASING.md)。本技能中英文文档必须同步修改。
+
 ### 参数
 
 | 参数 | 说明 | 默认值 |
