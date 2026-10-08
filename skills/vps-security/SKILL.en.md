@@ -52,6 +52,8 @@ sudo bash scripts/vps-secure.sh --email your@email.com
 
 Full script: `scripts/vps-secure.sh` (v2.2, 624 lines).
 
+> 📦 Maintenance & releasing (docs, signing, site sync): see [RELEASING.md](../../RELEASING.md). The English and Chinese docs must always be updated together.
+
 ## Options
 
 | Flag | Description | Default |
@@ -276,4 +278,3 @@ sysctl -w kernel.unprivileged_userns_clone=1
 - ✅ Ubuntu 20.04+ / 22.04+ / 24.04+
 - ✅ Debian 11+ / 12+
 
-> 📦 Maintenance & releasing (docs, signing, site sync): see [RELEASING.md](../../RELEASING.md). The English and Chinese docs must always be updated together.
