@@ -9,6 +9,18 @@ Versions are tied to the skill, not the repo.
 
 ## vps-security
 
+## 待办（下次带私钥发布时处理）
+
+以下两项在 CI 里是**警告级**（不阻塞），需要改 `vps-secure.sh` 本体 → 必须重新签名 →
+因此必须由所有者临时提供离线私钥才能落地：
+
+- `RANDOM_PORT` 是死变量：第 46/63/64 行赋值但全脚本从没读取（shellcheck SC2034）。
+  需确认随机端口实际由 `SSH_PORT` 逻辑实现后，删掉它或让它真正生效。
+- 第 515 行用了 `A && B || C` 写法（shellcheck SC2015）：
+  `nginx -t && systemctl reload nginx && log … || warn …`，当 reload 失败时会打出
+  「default_server 配置跳过（已有默认站点）」的**误导性**提示（防护本身不受影响），
+  建议改写成显式 `if/else`。
+
 ### v2.2 — 2026-10-08
 
 - **新增 minisign 签名**：`SHA256SUMS.minisig` + 公钥 `minisign.pub`（Key ID 5AB319E92F6F292），文档给出「先验签名、再验哈希」的顺序
