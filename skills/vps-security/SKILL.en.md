@@ -1,11 +1,11 @@
 ---
 name: vps-security
-description: VPS security hardening skill v2.1. One-click SSH hardening (custom or random high port), modern X25519/GCM cipher suites, UFW firewall, fail2ban with 9 jails (incl. Nginx scan detection), Nginx hardening, kernel hardening and daily security scans for Ubuntu/Debian. Use when the user needs to secure a VPS, configure SSH protection, install a firewall, block brute-force attacks, or stop Nginx web scanners.
+description: VPS security hardening skill v2.2. One-click SSH hardening (custom or random high port), modern X25519/GCM cipher suites, UFW firewall, fail2ban with 9 jails (incl. Nginx scan detection), Nginx hardening, kernel hardening and daily security scans for Ubuntu/Debian. Use when the user needs to secure a VPS, configure SSH protection, install a firewall, block brute-force attacks, or stop Nginx web scanners.
 ---
 
 # VPS Security Hardening (v2.2)
 
-One-shot security hardening for your VPS. v2.1 adds a random high SSH port option and modern SSH cipher hardening. v2.0 packaged battle-tested strategies from production into a generic script with automatic backups and syntax checks — you won't lock yourself out.
+One-shot security hardening for your VPS. v2.2 replaces curl|bash with download → verify → read → run and publishes SHA256SUMS. v2.1 added a random high SSH port option and modern SSH cipher hardening. v2.0 packaged battle-tested strategies from production into a generic script with automatic backups and syntax checks — you won't lock yourself out.
 
 ## Features
 
@@ -43,7 +43,7 @@ Or download and run:
 sudo bash scripts/vps-secure.sh --email your@email.com
 ```
 
-Full script: `scripts/vps-secure.sh` (v2.1, 615 lines).
+Full script: `scripts/vps-secure.sh` (v2.2, 624 lines).
 
 ## Options
 

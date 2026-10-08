@@ -121,7 +121,7 @@ check_ssh_session() {
 }
 
 # ============================================================
-log "开始 VPS 安全加固 v2.1 ..."
+log "开始 VPS 安全加固 v2.2 ..."
 detect_os
 # 未指定 --port 时（默认），生成随机高位端口（带冲突探测）
 if [[ -z "$SSH_PORT" ]]; then
@@ -610,7 +610,7 @@ chmod +x /usr/local/bin/security-scan.sh
 log "每日安全巡检已添加（每天 2:00 执行）"
 
 # ============================================================
-log "========== 安全加固 v2.0 完成！ =========="
+log "========== 安全加固 v2.2 完成！ =========="
 log "SSH 端口: $SSH_PORT（密钥登录，密码已禁用）"
 log "UFW: 已启用（默认拒绝入站）"
 log "fail2ban: $(fail2ban-client status 2>/dev/null | grep 'Jail list' || echo 'sshd + nginx jails')"
