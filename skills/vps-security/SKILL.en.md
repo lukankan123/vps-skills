@@ -37,6 +37,8 @@ sudo bash vps-security.sh --email you@example.com        # default: random high 
 # sudo bash vps-security.sh --port 13521 --email you@example.com   # fixed port
 ```
 
+> If verification fails right after a release: the GitHub raw CDN may still be serving the previous copy. Retry in a few minutes (the GitHub API serves the same file without that cache).
+
 Or download and run:
 
 ```bash

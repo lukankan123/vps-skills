@@ -47,6 +47,8 @@ sudo bash vps-security.sh --email you@example.com        # 默认随机高位 SS
 # sudo bash vps-security.sh --port 13521 --email you@example.com   # 指定固定端口
 ```
 
+> 若校验刚好失败、而这又是刚发布的版本：多半是 GitHub raw 的 CDN 还在缓存旧文件，等几分钟重试即可（校验值也可用 GitHub API 取，API 不带该缓存）。
+
 **适用系统：** Ubuntu 20.04+ / Debian 11+
 
 ## 目录结构
