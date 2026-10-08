@@ -1,5 +1,6 @@
 # VPS Skills
 
+[![CI](https://github.com/lukankan123/vps-skills/actions/workflows/ci.yml/badge.svg)](https://github.com/lukankan123/vps-skills/actions/workflows/ci.yml)
 🤖 Robot × Human — Open-source Skills collection
 
 ## About
