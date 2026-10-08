@@ -107,6 +107,23 @@ if shutil.which("minisign"):
 else:
     print("  ⏭️  未安装 minisign，跳过（CI 里会装）")
 
+print("\n⑥ 危险模式扫描（忽略注释行）")
+code_lines: list[tuple[int, str]] = []
+for i, line in enumerate(SCRIPT.read_text(encoding="utf-8").splitlines(), 1):
+    stripped = re.sub(r"(^|\s)#.*$", "", line)  # 去掉整行/行尾注释
+    if stripped.strip():
+        code_lines.append((i, stripped))
+
+DANGER = [
+    ("eval 执行", re.compile(r"(^|[^\w])eval\s")),
+    ("base64 解码", re.compile(r"base64\s+(-d|--decode)")),
+    ("管道执行（下载即运行）", re.compile(r"\b(?:curl|wget)\b[^\n|]*\|\s*(?:sudo\s+)?(?:ba)?sh\b")),
+]
+for label, pat in DANGER:
+    hits = [i for i, l in code_lines if pat.search(l)]
+    report(not hits, f"代码里无「{label}」",
+           f"脚本代码里出现「{label}」：行 {hits[:5]}（注释里的说明不计）")
+
 print()
 if failures:
     print(f"❌ 共 {len(failures)} 项未通过：")
