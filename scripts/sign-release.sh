@@ -52,7 +52,13 @@ gen_sums() {
 # ---------- 2. 签名 ----------
 sign_sums() {
   [ -x "$(command -v minisign)" ] || die "未安装 minisign（apt-get install -y minisign）"
-  [ -f "$SIGNKEY" ] || die "找不到私钥 $SIGNKEY（发布机才有私钥，这是设计如此）"
+  [ -f "$SIGNKEY" ] || die "找不到签名私钥 $SIGNKEY —— 私钥按设计应离线保管，服务器上通常没有。
+
+  要发布一个「签名版」，二选一：
+    A) 把私钥临时放回 $SIGNKEY（用完记得取走/删除）
+    B) 用 MINISIGN_KEYDIR=/临时目录 bash scripts/sign-release.sh 指向私钥所在目录
+
+  只想核对已发布产物（不需要私钥）：bash scripts/sign-release.sh --check"
   # -S 覆盖旧签名；私钥无口令时不会交互
   minisign -S -s "$SIGNKEY" -m "$REPO/SHA256SUMS" -c "vps-skills SHA256SUMS" >/dev/null
   log "SHA256SUMS.minisig 已生成"
