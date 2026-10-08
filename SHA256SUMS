@@ -1,4 +1,4 @@
-# vps-skills — integrity checksums (v2.2)
+# vps-skills — integrity checksums
 # Verify: sha256sum -c SHA256SUMS --ignore-missing
 # 分发版（保存为 vps-security.sh）与仓库内路径都登记，同一份文件。
 # 校验值务必取自 GitHub 仓库（与下载源分离）：

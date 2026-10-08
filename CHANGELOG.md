@@ -11,6 +11,9 @@ Versions are tied to the skill, not the repo.
 
 ### v2.2 — 2026-10-08
 
+- **新增 minisign 签名**：`SHA256SUMS.minisig` + 公钥 `minisign.pub`（Key ID 5AB319E92F6F292），文档给出「先验签名、再验哈希」的顺序
+- **新增 `scripts/sign-release.sh`**：重算校验值 → 签名 → 同步站点 → 闭环自验，一条流水跑完，避免漏签名
+- 新增 `RELEASING.md`：发布流程 + 中英文文档必须同步的硬规矩
 - **安装方式改变**：不再推荐 `curl ... | bash`（下载即执行，无审查机会，且校验值若与脚本同源等于没校验）
   改为四步：下载 → 校验 → 先读一遍 → 再执行
 - **新增 `SHA256SUMS`**：脚本的 SHA256 校验值发布在仓库根目录，文档明确说明「校验值必须与下载源分离」

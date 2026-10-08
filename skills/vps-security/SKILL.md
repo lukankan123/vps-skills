@@ -29,9 +29,12 @@ description: VPS 基础安全防护技能 v2.2。为不懂安全的普通用户�
 # 1) 下载脚本（不要直接管道给 shell —— 先落到文件里）
 curl -fsSLO https://vodka1.eu.cc/skills/vps-security.sh
 
-# 2) 校验完整性：校验值从 GitHub 仓库取（与下载源相互独立，这才有意义）
-curl -fsSL https://raw.githubusercontent.com/lukankan123/vps-skills/main/SHA256SUMS -o SHA256SUMS
-sha256sum -c SHA256SUMS --ignore-missing
+# 2) 校验完整性 + 验证签名（校验值与公钥都取自 GitHub 仓库，与下载源相互独立）
+curl -fsSLO https://raw.githubusercontent.com/lukankan123/vps-skills/main/SHA256SUMS
+curl -fsSLO https://raw.githubusercontent.com/lukankan123/vps-skills/main/SHA256SUMS.minisig
+curl -fsSLO https://raw.githubusercontent.com/lukankan123/vps-skills/main/minisign.pub
+minisign -Vm SHA256SUMS -p minisign.pub    # 先验「校验值本身」没被改（Key ID 5AB319E92F6F292）
+sha256sum -c SHA256SUMS --ignore-missing   # 再验脚本与校验值一致
 
 # 3) 花两分钟读一遍它要动什么（改 SSH 端口前强烈建议）
 less vps-security.sh
@@ -40,6 +43,8 @@ less vps-security.sh
 sudo bash vps-security.sh --email you@example.com        # 默认随机高位 SSH 端口
 # sudo bash vps-security.sh --port 13521 --email you@example.com   # 指定固定端口
 ```
+
+> 公钥指纹（Key ID）：`5AB319E92F6F292`，公钥串以 `RWSS8vaSnjGrBW2m…HiTZ` 结尾。签名能挡住「下载链路被换文件」（镜像、CDN、中间层、代理）；但密钥与仓库同机，若整台仓库主机被攻破则签名不再可信 —— 所以重要场合请独立渠道核对一次 Key ID。
 
 > 若校验刚好失败、而这又是刚发布的版本：多半是 GitHub raw 的 CDN 还在缓存旧文件，等几分钟重试即可（校验值也可用 GitHub API 取，API 不带该缓存）。
 

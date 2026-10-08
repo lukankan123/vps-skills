@@ -24,10 +24,13 @@ One-shot security hardening for your VPS. v2.2 replaces curl|bash with download 
 # 1) Download (do NOT pipe straight into a shell -- save it to a file first)
 curl -fsSLO https://vodka1.eu.cc/skills/vps-security.sh
 
-# 2) Verify integrity: the checksum comes from the GitHub repo
-#    (independent of the download host -- a checksum served next to the script proves nothing)
-curl -fsSL https://raw.githubusercontent.com/lukankan123/vps-skills/main/SHA256SUMS -o SHA256SUMS
-sha256sum -c SHA256SUMS --ignore-missing
+# 2) Verify integrity + signature (checksums and public key both come from the GitHub repo,
+#    independent of the download host)
+curl -fsSLO https://raw.githubusercontent.com/lukankan123/vps-skills/main/SHA256SUMS
+curl -fsSLO https://raw.githubusercontent.com/lukankan123/vps-skills/main/SHA256SUMS.minisig
+curl -fsSLO https://raw.githubusercontent.com/lukankan123/vps-skills/main/minisign.pub
+minisign -Vm SHA256SUMS -p minisign.pub    # verify the checksum file itself (Key ID 5AB319E92F6F292)
+sha256sum -c SHA256SUMS --ignore-missing   # then verify the script against it
 
 # 3) Read what it is going to change (strongly recommended before touching SSH)
 less vps-security.sh
@@ -36,6 +39,8 @@ less vps-security.sh
 sudo bash vps-security.sh --email you@example.com        # default: random high SSH port
 # sudo bash vps-security.sh --port 13521 --email you@example.com   # fixed port
 ```
+
+> Public key ID: `5AB319E92F6F292` (the key string ends with `RWSS8vaSnjGrBW2m…HiTZ`). Signatures protect against a tampered download path (mirror, CDN, middlebox, proxy). The signing key lives on the same host as the repo, so a full repo-host compromise would invalidate that guarantee -- for high-stakes use, confirm the Key ID out-of-band once.
 
 > If verification fails right after a release: the GitHub raw CDN may still be serving the previous copy. Retry in a few minutes (the GitHub API serves the same file without that cache).
 
