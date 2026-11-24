@@ -66,7 +66,7 @@ configparser.InterpolationSyntaxError: '%' must be followed by '%' or '(', found
 
 ### v2.2 — 2026-10-08
 
-- **新增 minisign 签名**：`SHA256SUMS.minisig` + 公钥 `minisign.pub`（Key ID 5AB319E92F6F292），文档给出「先验签名、再验哈希」的顺序
+- **新增 minisign 签名**：`SHA256SUMS.minisig` + 公钥 `minisign.pub`（Key ID 5AB319E92F6F292 —— 该私钥已于 2026-11-24 随系统重装丢失，现役公钥为 B77452EF0FED6854），文档给出「先验签名、再验哈希」的顺序
 - **新增 `scripts/sign-release.sh`**：重算校验值 → 签名 → 同步站点 → 闭环自验，一条流水跑完，避免漏签名
 - 新增 `RELEASING.md`：发布流程 + 中英文文档必须同步的硬规矩
 - **安装方式改变**：不再推荐 `curl ... | bash`（下载即执行，无审查机会，且校验值若与脚本同源等于没校验）

@@ -42,7 +42,7 @@ curl -fsSLO https://vodka1.eu.cc/skills/vps-security.sh
 curl -fsSLO https://raw.githubusercontent.com/lukankan123/vps-skills/main/SHA256SUMS
 curl -fsSLO https://raw.githubusercontent.com/lukankan123/vps-skills/main/SHA256SUMS.minisig
 curl -fsSLO https://raw.githubusercontent.com/lukankan123/vps-skills/main/minisign.pub
-minisign -Vm SHA256SUMS -p minisign.pub    # verify the checksum file itself (Key ID 5AB319E92F6F292)
+minisign -Vm SHA256SUMS -p minisign.pub    # verify the checksum file itself (Key ID B77452EF0FED6854)
 sha256sum -c SHA256SUMS --ignore-missing   # then verify the script against it
 
 # 3) Read what it is going to change (strongly recommended before touching SSH)
@@ -53,7 +53,7 @@ sudo bash vps-security.sh --email you@example.com        # default: random high 
 # sudo bash vps-security.sh --port 13521 --email you@example.com   # fixed port
 ```
 
-> Public key ID: `5AB319E92F6F292` (the key string ends with `RWSS8vaSnjGrBW2m…HiTZ`). Signatures protect against a tampered download path (mirror, CDN, middlebox, proxy). The signing key lives on the same host as the repo, so a full repo-host compromise would invalidate that guarantee -- for high-stakes use, confirm the Key ID out-of-band once.
+> Public key ID: `B77452EF0FED6854` (the key string ends with `RWRUaO0P71J0t0ia…58+w`). Signatures protect against a tampered download path (mirror, CDN, middlebox, proxy). The signing key lives on the same host as the repo, so a full repo-host compromise would invalidate that guarantee -- for high-stakes use, confirm the Key ID out-of-band once.
 
 > If verification fails right after a release: the GitHub raw CDN may still be serving the previous copy. Retry in a few minutes (the GitHub API serves the same file without that cache).
 

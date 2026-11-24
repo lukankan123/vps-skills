@@ -40,7 +40,7 @@ curl -fsSLO https://vodka1.eu.cc/skills/vps-security.sh
 curl -fsSLO https://raw.githubusercontent.com/lukankan123/vps-skills/main/SHA256SUMS
 curl -fsSLO https://raw.githubusercontent.com/lukankan123/vps-skills/main/SHA256SUMS.minisig
 curl -fsSLO https://raw.githubusercontent.com/lukankan123/vps-skills/main/minisign.pub
-minisign -Vm SHA256SUMS -p minisign.pub    # 先验「校验值本身」没被改（Key ID 5AB319E92F6F292）
+minisign -Vm SHA256SUMS -p minisign.pub    # 先验「校验值本身」没被改（Key ID B77452EF0FED6854）
 sha256sum -c SHA256SUMS --ignore-missing   # 再验脚本与校验值一致
 
 # 3) 花两分钟读一遍它要动什么（改 SSH 端口前强烈建议）
@@ -51,7 +51,7 @@ sudo bash vps-security.sh --email you@example.com        # 默认随机高位 SS
 # sudo bash vps-security.sh --port 13521 --email you@example.com   # 指定固定端口
 ```
 
-> 公钥指纹（Key ID）：`5AB319E92F6F292`，公钥串以 `RWSS8vaSnjGrBW2m…HiTZ` 结尾。签名能挡住「下载链路被换文件」（镜像、CDN、中间层、代理）；但密钥与仓库同机，若整台仓库主机被攻破则签名不再可信 —— 所以重要场合请独立渠道核对一次 Key ID。
+> 公钥指纹（Key ID）：`B77452EF0FED6854`，公钥串以 `RWRUaO0P71J0t0ia…58+w` 结尾。签名能挡住「下载链路被换文件」（镜像、CDN、中间层、代理）；但密钥与仓库同机，若整台仓库主机被攻破则签名不再可信 —— 所以重要场合请独立渠道核对一次 Key ID。
 
 > 若校验刚好失败、而这又是刚发布的版本：多半是 GitHub raw 的 CDN 还在缓存旧文件，等几分钟重试即可（校验值也可用 GitHub API 取，API 不带该缓存）。
 
