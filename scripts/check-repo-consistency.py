@@ -37,6 +37,15 @@ def report(ok: bool, ok_msg: str, bad_msg: str) -> None:
         failures.append(bad_msg)
 
 
+def warn(msg: str) -> None:
+    """警告：打印出来但不计入 failures，不阻塞 CI。
+
+    只用于「已知的、有替代验证手段的」降级状态 —— 比如签名私钥离线保管期间
+    暂时没有签名文件。绝不能用来放过真正的校验失败。
+    """
+    print("  ⚠️  " + msg)
+
+
 def fence_blocks(text: str) -> list[str]:
     """取出所有 fenced code block 的内容。"""
     return re.findall(r"```[^\n]*\n(.*?)```", text, re.S)
@@ -93,17 +102,24 @@ report(entries.get("skills/vps-security/scripts/vps-secure.sh") == actual,
        "脚本已改动但 SHA256SUMS 没重新生成（快跑 scripts/sign-release.sh）")
 
 print("\n⑤ 签名自洽（需要 minisign）")
+SIG = ROOT / "SHA256SUMS.minisig"
 if shutil.which("minisign"):
-    sig_ok = SCRIPT.exists() and (ROOT / "SHA256SUMS.minisig").exists()
-    report(sig_ok, "签名文件存在", "缺少 SHA256SUMS.minisig")
-    if sig_ok:
+    if not SIG.exists():
+        # 私钥离线保管，且 2026-11-24 确认原私钥已随系统重装丢失，
+        # 因此这一版暂时没有签名。这不是「验证通过」，必须明确讲出来。
+        warn("SHA256SUMS.minisig 不存在 —— 当前版本无签名，完整性只能靠 SHA256 校验")
+        warn("  重建步骤见 RELEASING.md「私钥丢失之后」一节")
+    else:
         r = subprocess.run(["minisign", "-Vm", "SHA256SUMS", "-p", "minisign.pub"],
                            cwd=ROOT, capture_output=True, text=True)
+        # 签名文件存在就必须验得过 —— 验不过说明有人动过校验值，是硬错误
         report(r.returncode == 0, "SHA256SUMS 签名验证通过",
                f"SHA256SUMS 签名验证失败：{(r.stdout + r.stderr).strip()[:120]}")
-        chk = subprocess.run(["sha256sum", "-c", "SHA256SUMS", "--ignore-missing"],
-                             cwd=ROOT, capture_output=True, text=True)
-        report(chk.returncode == 0, "校验值与脚本一致", "校验值比对失败")
+
+    # 校验值比对任何情况下都必须通过（签名缺失时它是唯一的完整性防线）
+    chk = subprocess.run(["sha256sum", "-c", "SHA256SUMS", "--ignore-missing"],
+                         cwd=ROOT, capture_output=True, text=True)
+    report(chk.returncode == 0, "校验值与脚本一致", "校验值比对失败")
 else:
     print("  ⏭️  未安装 minisign，跳过（CI 里会装）")
 
