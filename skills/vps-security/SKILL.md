@@ -50,6 +50,17 @@ sudo bash vps-security.sh --email you@example.com        # 默认随机高位 SS
 
 > 📦 维护与发布（改文档、签名、同步站点）：见仓库根目录 [RELEASING.md](../../RELEASING.md)。本技能中英文文档必须同步修改。
 
+> ⚠️ **动了 `vps-secure.sh` 就必须重新签名，否则 CI 直接红。**
+>
+> 脚本一改，`SHA256SUMS` 里登记的哈希就失效了。顺序是：
+> `bash scripts/sign-release.sh`（重算 SHA256SUMS → 签名 → 同步站点 → 闭环自验），
+> 或者手动 `sha256sum` 重算后再用私钥签 `SHA256SUMS.minisig`。
+>
+> 签名这一步**只有私钥持有者能在自己机器上做**：私钥不上服务器、不进聊天记录。
+> 每次发布都要重来一遍，这是离线私钥的固有代价 —— 也正因如此，签名才值钱。
+>
+> 发布前自查：`python3 scripts/check-repo-consistency.py`，退出码 0 才算完。
+
 ### 参数
 
 | 参数 | 说明 | 默认值 |

@@ -54,6 +54,18 @@ Full script: `skills/vps-security/scripts/vps-secure.sh` (v2.2.1, 625 lines).
 
 > 📦 Maintenance & releasing (docs, signing, site sync): see [RELEASING.md](../../RELEASING.md). The English and Chinese docs must always be updated together.
 
+> ⚠️ **Any change to `vps-secure.sh` requires re-signing, or CI goes red immediately.**
+>
+> Editing the script invalidates the hash recorded in `SHA256SUMS`. The order is:
+> `bash scripts/sign-release.sh` (regenerate SHA256SUMS → sign → sync site → closed-loop self-check),
+> or recompute with `sha256sum` by hand and then sign `SHA256SUMS.minisig` with the private key.
+>
+> The signing step **can only be done by the private-key holder, on their own machine**: the
+> key never goes on a server and never through a chat. You repeat it on every release — that's
+> the inherent cost of an offline key, and it is exactly why the signature means something.
+>
+> Pre-release self-check: `python3 scripts/check-repo-consistency.py`, exit code 0 or it isn't done.
+
 ## Options
 
 | Flag | Description | Default |
