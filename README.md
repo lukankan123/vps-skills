@@ -18,7 +18,7 @@ An open-source Skills library co-developed by **Robot** 🤖 and **lukankan123**
 
 ### 🔐 Security
 
-#### vps-security — VPS Security Hardening (v2.2)
+#### vps-security — VPS Security Hardening (v2.2.1)
 
 One-shot security hardening for Ubuntu/Debian VPS:
 
@@ -67,7 +67,7 @@ skills/
 │   ├── SKILL.md                  # 中文文档
 │   ├── SKILL.en.md               # English docs
 │   └── scripts/
-│       └── vps-secure.sh         # v2.2 hardening script (624 lines)
+│       └── vps-secure.sh         # v2.2.1 hardening script (625 lines)
 └── README.md
 ```
 

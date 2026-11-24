@@ -21,6 +21,49 @@ Versions are tied to the skill, not the repo.
   「default_server 配置跳过（已有默认站点）」的**误导性**提示（防护本身不受影响），
   建议改写成显式 `if/else`。
 
+### v2.2.1 — 2026-11-24
+
+只修 bug，不加功能。三个问题都属于「装了但防护静默失效」那一类 —— 不会报错，但等于没防护。
+
+**1. 巡检脚本取 IP 取错，自动封禁实际是坏的**
+
+`vps-secure.sh` 和 SKILL.md 巡检段落里原来写 `awk '{print $NF}'`。sshd 日志行是：
+
+```
+Failed password for root from 1.2.3.4 port 2222 ssh2
+```
+
+`$NF` 取到的是 `ssh2`，不是 IP。后面 `fail2ban-client set sshd banip "ssh2"` 等于没封 —— 看起来跑了，实际什么都没发生。改为取 `from` 后面那个字段。
+
+同段连带修：失败次数永远显示空（`FAILED_IPS` 里只有 IP 没有计数）；ip-api 明文 HTTP 查询加了 `--max-time 5` 和失败跳过，不再阻塞封禁流程。
+
+**2. `nginx-wpscan` 过滤器正则编译失败**
+
+括号不平衡（左 3 右 4），fail2ban 直接报 `ERROR: Unable to compile regular expression`，这个 jail 起了也白起。
+
+另外结尾的 `(\/|\?|$)` 在真实日志里也匹配不到 —— nginx 日志中路径后面跟的是空格（`"GET /wp-login.php HTTP/1.1"`），`$` 表示行尾。补上 `\s` 分支后实测命中。
+
+**3. `nginx-bad-request` 过滤器加载就崩（此轮新发现）**
+
+正则里的 `%00` `%0d` `%0a` 会被 Python `configparser` 当成插值语法：
+
+```
+configparser.InterpolationSyntaxError: '%' must be followed by '%' or '(', found: '%00|%0d|%0a|...'
+```
+
+整个过滤器文件解析失败。**fail2ban 配置里 `%` 必须写成 `%%`。**
+
+**文档对齐**
+
+- jail 数量 9 → 10（实际就是 10 个：sshd、sshd-ddos 和 8 个 nginx 类）
+- 脚本路径 `scripts/vps-secure.sh` → `skills/vps-security/scripts/vps-secure.sh`（根目录的 `scripts/` 只有 CI 工具，原路径在 GitHub 上点开是 404）
+- 脚本行数 624 → 625
+- 中英文档同步
+
+**验证方式**
+
+8 个 fail2ban 过滤器全部用 `fail2ban-regex` 实测可加载；有对应样本路径的均命中（secscan 5 行、wpscan 1 行、phpscan 1 行、bad-request 1 行）。巡检的 IP 提取逻辑用仿真 auth.log 验证：旧写法输出 4 个 `ssh2`，新写法正确输出 `203.0.113.9 × 3`。
+
 ### v2.2 — 2026-10-08
 
 - **新增 minisign 签名**：`SHA256SUMS.minisig` + 公钥 `minisign.pub`（Key ID 5AB319E92F6F292），文档给出「先验签名、再验哈希」的顺序

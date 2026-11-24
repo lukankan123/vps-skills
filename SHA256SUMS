@@ -3,5 +3,5 @@
 # 分发版（保存为 vps-security.sh）与仓库内路径都登记，同一份文件。
 # 校验值务必取自 GitHub 仓库（与下载源分离）：
 #   https://raw.githubusercontent.com/lukankan123/vps-skills/main/SHA256SUMS
-5d76249dcaa583a395a2dfa776dcc21a13b9d7f4f27c50bbb07fc65dfc225557  vps-security.sh
-5d76249dcaa583a395a2dfa776dcc21a13b9d7f4f27c50bbb07fc65dfc225557  skills/vps-security/scripts/vps-secure.sh
+4ba55c17ef02466c678d16d1e083ac64eef01291cc4406217846b0c8c8471fff  vps-security.sh
+4ba55c17ef02466c678d16d1e083ac64eef01291cc4406217846b0c8c8471fff  skills/vps-security/scripts/vps-secure.sh

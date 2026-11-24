@@ -1,11 +1,11 @@
 ---
 name: vps-security
-description: VPS 基础安全防护技能 v2.2。为不懂安全的普通用户自动配置 SSH 端口修改（含随机高位端口）、现代化 SSH 加密算法、密钥登录、防火墙（UFW 或 iptables）、fail2ban 防暴力破解，以及 Nginx 恶意扫描检测与拦截。适用于 Ubuntu/Debian 系统。当用户需要：保护 VPS 安全、配置 SSH 防护、安装防火墙、防暴力破解、Nginx Web 扫描拦截时使用。
+description: VPS 基础安全防护技能 v2.2.1。为不懂安全的普通用户自动配置 SSH 端口修改（含随机高位端口）、现代化 SSH 加密算法、密钥登录、防火墙（UFW 或 iptables）、fail2ban 防暴力破解，以及 Nginx 恶意扫描检测与拦截。适用于 Ubuntu/Debian 系统。当用户需要：保护 VPS 安全、配置 SSH 防护、安装防火墙、防暴力破解、Nginx Web 扫描拦截时使用。
 ---
 
-# VPS 基础安全防护（v2.2）
+# VPS 基础安全防护（v2.2.1）
 
-本技能为 VPS 提供基础安全防护，适用于 Ubuntu/Debian 系统。v2.2 把安装方式从 curl | bash 改为「下载 → 校验 → 先读 → 再执行」，并发布 SHA256SUMS 校验值 + minisign 签名；v2.1 新增随机高位 SSH 端口与现代化 SSH 加密算法；v2.0 已同步生产环境实战策略。
+本技能为 VPS 提供基础安全防护，适用于 Ubuntu/Debian 系统。v2.2.1 把安装方式从 curl | bash 改为「下载 → 校验 → 先读 → 再执行」，并发布 SHA256SUMS 校验值 + minisign 签名；v2.1 新增随机高位 SSH 端口与现代化 SSH 加密算法；v2.0 已同步生产环境实战策略。
 
 ## 功能特性
 
@@ -13,7 +13,7 @@ description: VPS 基础安全防护技能 v2.2。为不懂安全的普通用户�
 - 🔑 自动配置 SSH 公钥认证（禁用密码登录）
 - 🛡️ SSH 加密算法现代化（Kex/Cipher/MAC 移除老旧弱算法，只保留安全强度）
 - 🔥 智能防火墙（UFW，支持 --strict 出站白名单）
-- 🚫 fail2ban 防暴力破解（**9 个 jail**：sshd + nginx 扫描检测 6 类 + botsearch + 限流联动）
+- 🚫 fail2ban 防暴力破解（**10 个 jail**：sshd + nginx 扫描检测 6 类 + botsearch + 限流联动）
 - 🌐 Nginx 加固（隐藏版本号 + 恶意 UA 黑名单 + 敏感路径 deny + 限流 + 幽灵域名 444）
 - 🧠 内核加固（关闭 unprivileged userns，防 DirtyFrag/Bad Epoll 提权）
 - 📋 日志审计（登录记录、失败尝试、封禁记录）
@@ -21,7 +21,7 @@ description: VPS 基础安全防护技能 v2.2。为不懂安全的普通用户�
 
 ## 执行脚本
 
-完整脚本见：`scripts/vps-secure.sh`（v2.2，624 行）
+完整脚本见：`skills/vps-security/scripts/vps-secure.sh`（v2.2.1，625 行）
 
 ### 使用方法
 
@@ -62,7 +62,7 @@ sudo bash vps-security.sh --email you@example.com        # 默认随机高位 SS
 | `--skip-kernel` | 跳过内核加固 | 关闭 |
 | `--no-upgrade` | 跳过 apt 升级 | 关闭 |
 
-> 核心步骤细节以 `scripts/vps-secure.sh` v2.2 为准（含随机高位端口、现代化 SSH 加密、9 个 jail、Nginx 加固、内核加固、升级版巡检）。
+> 核心步骤细节以 `skills/vps-security/scripts/vps-secure.sh` v2.2.1 为准（含随机高位端口、现代化 SSH 加密、10 个 jail、Nginx 加固、内核加固、升级版巡检）。
 
 ## 核心步骤
 
@@ -193,25 +193,33 @@ log() {
 log "========== 开始每日安全巡检 =========="
 
 # 1. 检测今日登录失败的IP（3次以上失败）
-FAILED_IPS=$(sudo grep "Failed password" /var/log/auth.log | \
+# ⚠️ 必须取 "from" 后面那个字段。sshd 日志行形如：
+#      Failed password for root from 1.2.3.4 port 2222 ssh2
+#    取 $NF 会拿到 ssh2（不是 IP），后面 fail2ban-client banip "ssh2" 等于没封 —— 静默失效。
+FAILED_IPS=$(sudo grep "Failed password" /var/log/auth.log 2>/dev/null | \
     grep "$(date '+%b %d')" | \
-    awk '{print $NF}' | sort | uniq -c | \
-    awk '$1 >= 3 {print $2}')
+    awk '{for(i=1;i<=NF;i++) if($i=="from") print $(i+1)}' | \
+    sort | uniq -c | awk '$1 >= 3 {print $2}')
 
 if [ -n "$FAILED_IPS" ]; then
     log "检测到可疑IP："
     for IP in $FAILED_IPS; do
-        log "  - $IP (失败次数: $(echo $FAILED_IPS | grep $IP | awk '{print $1}'))"
-        
-        # 获取IP基本信息
-        IP_INFO=$(curl -s "http://ip-api.com/json/$IP?fields=country,city,org,isp" 2>/dev/null)
-        COUNTRY=$(echo $IP_INFO | grep -o '"country":"[^"]*"' | cut -d'"' -f4)
-        CITY=$(echo $IP_INFO | grep -o '"city":"[^"]*"' | cut -d'"' -f4)
-        ISP=$(echo $IP_INFO | grep -o '"isp":"[^"]*"' | cut -d'"' -f4)
-        
-        log "    国家: ${COUNTRY:-未知}"
-        log "    城市: ${CITY:-未知}"
-        log "    ISP: ${ISP:-未知}"
+        # 次数在这里单独统计：FAILED_IPS 里只有 IP 没有计数
+        CNT=$(sudo grep "Failed password" /var/log/auth.log 2>/dev/null | \
+              grep "$(date '+%b %d')" | grep -c "from $IP ")
+        log "  - $IP (失败次数: ${CNT:-未知})"
+
+        # 归属查询：ip-api 免费档只提供明文 HTTP（HTTPS 要付费），
+        # 且有 45 次/分钟限速 —— 所以尽力而为，失败就跳过，绝不能影响封禁流程
+        IP_INFO=$(curl -s --max-time 5 "http://ip-api.com/json/$IP?fields=country,city,org,isp" 2>/dev/null)
+        if [ -n "$IP_INFO" ]; then
+            COUNTRY=$(echo "$IP_INFO" | grep -o '"country":"[^"]*"' | cut -d'"' -f4)
+            CITY=$(echo "$IP_INFO" | grep -o '"city":"[^"]*"' | cut -d'"' -f4)
+            ISP=$(echo "$IP_INFO" | grep -o '"isp":"[^"]*"' | cut -d'"' -f4)
+            log "    国家: ${COUNTRY:-未知} / 城市: ${CITY:-未知} / ISP: ${ISP:-未知}"
+        else
+            log "    归属查询失败（限速或网络问题），跳过"
+        fi
         
         # 检查是否已在封禁列表
         if ! sudo fail2ban-client status sshd | grep -q "$IP"; then

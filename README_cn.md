@@ -18,13 +18,13 @@
 
 ### 🔐 安全防护
 
-#### vps-security — VPS 基础安全防护（v2.2）
+#### vps-security — VPS 基础安全防护（v2.2.1）
 
 为 Ubuntu/Debian VPS 提供一键式安全加固：
 
 - 🔐 SSH 硬化（自定义端口、仅密钥登录、限制尝试次数）
 - 🔥 UFW 防火墙（默认拒绝入站，支持 `--strict` 出站白名单）
-- 🚫 fail2ban **9 个 jail**（SSH 暴力破解 + Nginx 扫描检测 6 类 + 限流联动）
+- 🚫 fail2ban **10 个 jail**（SSH 暴力破解 + Nginx 扫描检测 6 类 + 限流联动）
 - 🌐 Nginx 加固（隐藏版本号、19 种恶意 UA 黑名单、敏感路径 deny、限流、幽灵域名 444）
 - 🧠 内核加固（关闭 unprivileged userns，防 DirtyFrag / Bad Epoll 提权）
 - 🔍 每日安全巡检（登录审计 / Nginx 扫描 / 资源 / SSL 证书到期）
@@ -65,7 +65,7 @@ skills/
 │   ├── SKILL.md                  # 中文文档
 │   ├── SKILL.en.md               # 英文文档
 │   └── scripts/
-│       └── vps-secure.sh         # v2.2 加固脚本（624 行）
+│       └── vps-secure.sh         # v2.2.1 加固脚本（625 行）
 └── README.md
 ```
 

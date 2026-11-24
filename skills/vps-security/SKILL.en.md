@@ -1,18 +1,18 @@
 ---
 name: vps-security
-description: VPS security hardening skill v2.2. One-click SSH hardening (custom or random high port), modern X25519/GCM cipher suites, UFW firewall, fail2ban with 9 jails (incl. Nginx scan detection), Nginx hardening, kernel hardening and daily security scans for Ubuntu/Debian. Use when the user needs to secure a VPS, configure SSH protection, install a firewall, block brute-force attacks, or stop Nginx web scanners.
+description: VPS security hardening skill v2.2.1. One-click SSH hardening (custom or random high port), modern X25519/GCM cipher suites, UFW firewall, fail2ban with 10 jails (incl. Nginx scan detection), Nginx hardening, kernel hardening and daily security scans for Ubuntu/Debian. Use when the user needs to secure a VPS, configure SSH protection, install a firewall, block brute-force attacks, or stop Nginx web scanners.
 ---
 
-# VPS Security Hardening (v2.2)
+# VPS Security Hardening (v2.2.1)
 
-One-shot security hardening for your VPS. v2.2 replaces curl|bash with download → verify → read → run and publishes SHA256SUMS. v2.1 added a random high SSH port option and modern SSH cipher hardening. v2.0 packaged battle-tested strategies from production into a generic script with automatic backups and syntax checks — you won't lock yourself out.
+One-shot security hardening for your VPS. v2.2.1 replaces curl|bash with download → verify → read → run and publishes SHA256SUMS. v2.1 added a random high SSH port option and modern SSH cipher hardening. v2.0 packaged battle-tested strategies from production into a generic script with automatic backups and syntax checks — you won't lock yourself out.
 
 ## Features
 
 - 🔐 **SSH Hardening** — custom port OR default random high port (40000-60000, collision-checked, recorded to `/root/ssh_port.txt`), disable password login, force key auth, limit retries
 - 🛡️ **Modern SSH crypto** — X25519 key exchange, Chacha20-Poly1305 / AES-GCM ciphers, modern MACs; keeps session alive (ClientAliveInterval/TCPKeepAlive)
 - 🔥 **UFW Firewall** — deny incoming by default, optional `--strict` egress whitelist mode
-- 🚫 **fail2ban with 9 jails** — SSH brute-force + 6 Nginx scan detectors + bot search + rate-limit cooldown
+- 🚫 **fail2ban with 10 jails** — SSH brute-force + 6 Nginx scan detectors + bot search + rate-limit cooldown
 - 🌐 **Nginx Hardening** — hide version, block 19 malicious UAs, deny sensitive paths, rate limiting, ghost-domain 444
 - 🧠 **Kernel Hardening** — disable `unprivileged_userns_clone` (blocks DirtyFrag / Bad Epoll LPE chains)
 - 📋 **Log Auditing** — login records, failed attempts, ban records
@@ -47,10 +47,10 @@ sudo bash vps-security.sh --email you@example.com        # default: random high 
 Or download and run:
 
 ```bash
-sudo bash scripts/vps-secure.sh --email your@email.com
+sudo bash skills/vps-security/scripts/vps-secure.sh --email your@email.com
 ```
 
-Full script: `scripts/vps-secure.sh` (v2.2, 624 lines).
+Full script: `skills/vps-security/scripts/vps-secure.sh` (v2.2.1, 625 lines).
 
 > 📦 Maintenance & releasing (docs, signing, site sync): see [RELEASING.md](../../RELEASING.md). The English and Chinese docs must always be updated together.
 
@@ -70,13 +70,13 @@ Examples:
 
 ```bash
 # Default random high port — records the picked port to /root/ssh_port.txt
-sudo bash scripts/vps-secure.sh --email you@email.com
+sudo bash skills/vps-security/scripts/vps-secure.sh --email you@email.com
 
 # Strict egress whitelist + custom port
-sudo bash scripts/vps-secure.sh --port 22022 --email you@email.com --strict
+sudo bash skills/vps-security/scripts/vps-secure.sh --port 22022 --email you@email.com --strict
 
 # App-only server (no Nginx)
-sudo bash scripts/vps-secure.sh --skip-nginx
+sudo bash skills/vps-security/scripts/vps-secure.sh --skip-nginx
 ```
 
 ## Core Steps
@@ -104,7 +104,7 @@ for opt in "PermitRootLogin prohibit-password" "PasswordAuthentication no" \
     sed -i "s|^#\?$key .*|$key $val|" /etc/ssh/sshd_config || echo "$key $val" >> /etc/ssh/sshd_config
 done
 
-# Modern SSH crypto (v2.2): strip legacy/weak algorithms, keep only strong ones
+# Modern SSH crypto (v2.2.1): strip legacy/weak algorithms, keep only strong ones
 for opt in \
     "KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256" \
     "Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes128-ctr" \
@@ -132,7 +132,7 @@ echo "y" | ufw enable
 
 **`--strict` egress whitelist:** deny outgoing by default, allow only `53/80/123/443/25/587` (DNS/HTTP/HTTPS/NTP/SMTP).
 
-### 4. fail2ban (9 jails)
+### 4. fail2ban (10 jails)
 
 Key settings: `backend = polling` (nginx logs aren't in journald), `dbpurgeage = 0` (ban records survive restarts).
 
@@ -253,7 +253,7 @@ grep -E "(\.env|\.git)" /var/log/nginx/access.log | awk '{print $1}' | sort | un
 ```bash
 grep "^Port" /etc/ssh/sshd_config          # SSH port
 ufw status verbose                          # firewall
-fail2ban-client status                      # 9 jails
+fail2ban-client status                      # 10 jails
 curl -o /dev/null -w "%{http_code}" http://127.0.0.1/.env   # sensitive path → 403/444
 cat /proc/sys/kernel/unprivileged_userns_clone               # kernel → 0
 bash /usr/local/bin/security-scan.sh        # manual scan

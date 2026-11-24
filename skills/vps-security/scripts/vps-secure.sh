@@ -20,7 +20,7 @@
 #   --skip-kernel          跳过内核加固（sysctl 参数）
 #   --no-upgrade           跳过 apt 系统升级
 #
-# v2.2 新增：
+# v2.2.1 新增：
 #   - 安装方式改为「下载 → 校验 → 先读 → 再执行」，不再推荐 curl | bash
 #   - 发布 SHA256SUMS 校验值（仓库根目录），文档说明为何校验值必须与下载源分离
 #
@@ -30,7 +30,7 @@
 #   - SSH 会话保持（ClientAliveInterval/TCPKeepAlive），防改配置时断连
 #
 # v2.0 新增：
-#   - fail2ban 9 个 jail（sshd + nginx 扫描检测 6 类 + botsearch + 限流联动）
+#   - fail2ban 10 个 jail（sshd + nginx 扫描检测 6 类 + botsearch + 限流联动）
 #   - Nginx 加固：隐藏版本号 / 敏感路径 deny / 恶意 UA 拦截 / 幽灵域名 444
 #   - Nginx 限流：全局 10r/s + 敏感路径 3r/m + 429 联动封禁
 #   - 内核加固：关闭 unprivileged userns（防 DirtyFrag / Bad Epoll 提权）
@@ -121,7 +121,7 @@ check_ssh_session() {
 }
 
 # ============================================================
-log "开始 VPS 安全加固 v2.2 ..."
+log "开始 VPS 安全加固 v2.2.1 ..."
 detect_os
 # 未指定 --port 时（默认），生成随机高位端口（带冲突探测）
 if [[ -z "$SSH_PORT" ]]; then
@@ -227,7 +227,7 @@ if command -v ufw > /dev/null; then
     log "UFW 防火墙配置完成"
 fi
 
-# 5. 配置 fail2ban（9 个 jail）
+# 5. 配置 fail2ban（10 个 jail）
 log "配置 fail2ban 防暴力破解 + Nginx 扫描检测..."
 
 # 5.1 通用 nginx 扫描过滤器（综合 22 种模式）
@@ -248,7 +248,7 @@ EOF
 # 5.3 WordPress 扫描
 cat > /etc/fail2ban/filter.d/nginx-wpscan.conf << 'EOF'
 [Definition]
-failregex = ^<HOST> - - \[.*\] "(GET|POST|HEAD) \/(wp-content|wp-includes|wp-login|wp-admin|xmlrpc\.php)(\/|\?|$).*)
+failregex = ^<HOST> - - \[.*\] "(GET|POST|HEAD) \/(wp-content|wp-includes|wp-login|wp-admin|xmlrpc\.php)(\/|\?|\s|$)
 ignoreregex =
 EOF
 
@@ -269,7 +269,7 @@ EOF
 # 5.6 恶意/异常请求
 cat > /etc/fail2ban/filter.d/nginx-bad-request.conf << 'EOF'
 [Definition]
-failregex = ^<HOST> - - \[.*\] "(GET|POST|HEAD|PUT|DELETE|OPTIONS) \/(\.\.|%00|%0d|%0a|\\x00|union.*select|select.*from|insert.*into|eval\(|base64_decode|wget |curl ).*
+failregex = ^<HOST> - - \[.*\] "(GET|POST|HEAD|PUT|DELETE|OPTIONS) \/(\.\.|%%00|%%0d|%%0a|\\x00|union.*select|select.*from|insert.*into|eval\(|base64_decode|wget |curl ).*
 ignoreregex =
 EOF
 
@@ -287,7 +287,7 @@ failregex = ^<HOST> - - \[.*\] "(GET|POST|HEAD).*" 429 .*
 ignoreregex =
 EOF
 
-# jail.local：9 个 jail + 关键配置
+# jail.local：10 个 jail + 关键配置
 cat > /etc/fail2ban/jail.local << EOF
 [DEFAULT]
 bantime = 604800
@@ -391,7 +391,7 @@ EOF
 if [[ -d /var/log/nginx ]]; then
     systemctl enable fail2ban > /dev/null 2>&1 || true
     systemctl restart fail2ban
-    log "fail2ban 已启用（9 个 jail）"
+    log "fail2ban 已启用（10 个 jail）"
 else
     # 禁用 nginx 相关 jail（没装 nginx 时）
     sed -i 's/^enabled = true/enabled = false/' /etc/fail2ban/jail.local
@@ -546,8 +546,9 @@ log "========== 开始每日安全巡检 =========="
 
 # 1. 登录失败检测
 FAILED_IPS=$(grep "Failed password" /var/log/auth.log 2>/dev/null | \
-    grep "$(date '+%b %d')" | awk '{print $NF}' | sort | uniq -c | \
-    awk '$1 >= 3 {print $2}')
+    grep "$(date '+%b %d')" | \
+    awk '{for(i=1;i<=NF;i++) if($i=="from") print $(i+1)}' | \
+    sort | uniq -c | awk '$1 >= 3 {print $2}')
 
 if [ -n "$FAILED_IPS" ]; then
     log "检测到异常登录失败IP:"
@@ -610,7 +611,7 @@ chmod +x /usr/local/bin/security-scan.sh
 log "每日安全巡检已添加（每天 2:00 执行）"
 
 # ============================================================
-log "========== 安全加固 v2.2 完成！ =========="
+log "========== 安全加固 v2.2.1 完成！ =========="
 log "SSH 端口: $SSH_PORT（密钥登录，密码已禁用）"
 log "UFW: 已启用（默认拒绝入站）"
 log "fail2ban: $(fail2ban-client status 2>/dev/null | grep 'Jail list' || echo 'sshd + nginx jails')"
